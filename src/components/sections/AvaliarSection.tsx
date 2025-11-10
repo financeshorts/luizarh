@@ -10,16 +10,18 @@ import toast from 'react-hot-toast'
 interface AvaliarSectionProps {
   gestorId: string
   gestorNome: string
+  isRH?: boolean
 }
 
-export function AvaliarSection({ gestorId, gestorNome }: AvaliarSectionProps) {
+export function AvaliarSection({ gestorId, gestorNome, isRH = false }: AvaliarSectionProps) {
   const [step, setStep] = useState(1)
   const [colaboradorId, setColaboradorId] = useState('')
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [observacoes, setObservacoes] = useState('')
   const [isComplete, setIsComplete] = useState(false)
 
-  const { data: colaboradores = [], isLoading: loadingColaboradores } = useColaboradores(gestorId)
+  // RH vê todos os colaboradores (gestorId = undefined), gestores veem apenas os seus
+  const { data: colaboradores = [], isLoading: loadingColaboradores } = useColaboradores(isRH ? undefined : gestorId)
   const createAvaliacao = useCreateAvaliacao()
 
   const selectedColaborador = colaboradores.find(c => c.id === colaboradorId)

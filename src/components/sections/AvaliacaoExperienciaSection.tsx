@@ -6,7 +6,11 @@ import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { AvaliacaoExperiencia, Colaborador, COMPETENCIAS_EXPERIENCIA } from '../../types'
 
-export function AvaliacaoExperienciaSection() {
+interface AvaliacaoExperienciaSectionProps {
+  isRH?: boolean
+}
+
+export function AvaliacaoExperienciaSection({ isRH = false }: AvaliacaoExperienciaSectionProps) {
   const [showForm, setShowForm] = useState(false)
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoExperiencia[]>([])
@@ -21,15 +25,22 @@ export function AvaliacaoExperienciaSection() {
   useEffect(() => {
     loadColaboradores()
     loadAvaliacoes()
-  }, [])
+  }, [isRH])
 
   const loadColaboradores = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('colaboradores')
         .select('*')
-        .eq('status', 'experiencia')
         .order('nome')
+
+      // RH vê todos os colaboradores, independente do status
+      // Outros usuários veem apenas colaboradores em experiência
+      if (!isRH) {
+        query = query.eq('status', 'experiencia')
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       setColaboradores(data || [])
