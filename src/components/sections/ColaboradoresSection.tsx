@@ -48,13 +48,15 @@ export function ColaboradoresSection({ isRH, gestorId, gestorName, onAvaliar }: 
           colaboradorData: formData
         })
       } else {
-        if (!gestorId) {
+        // RH pode criar colaboradores sem gestor_id (perfil administrador)
+        // Gestores precisam ter gestorId definido
+        if (!isRH && !gestorId) {
           toast.error('Erro: gestor não identificado')
           return
         }
         await createColaborador.mutateAsync({
           colaboradorData: formData,
-          gestorId: gestorId
+          gestorId: gestorId || null
         })
       }
       resetForm()

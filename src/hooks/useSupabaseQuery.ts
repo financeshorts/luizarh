@@ -25,7 +25,7 @@ export function useCreateColaborador() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ colaboradorData, gestorId }: { colaboradorData: any, gestorId: string }) => {
+    mutationFn: async ({ colaboradorData, gestorId }: { colaboradorData: any, gestorId: string | null }) => {
       logger.info('Criando colaborador...', colaboradorData)
       const result = await rhService.createColaborador(colaboradorData, gestorId)
       logger.success('Colaborador criado:', result)

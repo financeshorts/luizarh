@@ -40,15 +40,16 @@ export class RHService {
     }
   }
 
-  async createColaborador(colaboradorData: ColaboradorForm, gestorId: string): Promise<Colaborador> {
+  async createColaborador(colaboradorData: ColaboradorForm, gestorId: string | null): Promise<Colaborador> {
     try {
-      const insertData = {
+      const insertData: any = {
         nome: colaboradorData.nome,
         email: colaboradorData.email || null,
         setor: colaboradorData.setor,
+        unidade: colaboradorData.unidade || null,
         data_admissao: colaboradorData.data_admissao,
         status: colaboradorData.status || 'ativo',
-        gestor_id: gestorId
+        gestor_id: gestorId || null
       }
 
       logger.info('Inserting colaborador data:', insertData)
