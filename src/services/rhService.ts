@@ -346,9 +346,11 @@ export class RHService {
         `)
         .order('created_at', { ascending: false })
 
-      if (gestorId) {
-        query = query.eq('gestor_id', gestorId)
-      }
+      // Não filtra por gestor_id para mostrar todos os feedbacks
+      // Isso permite que supervisores vejam todos os feedbacks cadastrados
+      // if (gestorId) {
+      //   query = query.eq('gestor_id', gestorId)
+      // }
 
       const { data, error } = await query
 
@@ -357,6 +359,7 @@ export class RHService {
         throw error
       }
 
+      logger.info(`✅ ${data?.length || 0} feedbacks carregados`)
       return data || []
     } catch (error) {
       logger.error('Erro no serviço getFeedbacks:', error)
