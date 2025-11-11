@@ -256,14 +256,22 @@ export class RHService {
 
   async createFeedback(feedbackData: FeedbackForm, gestorIdOrUsuarioId: string): Promise<Feedback> {
     try {
+      logger.info('📝 Iniciando criação de feedback...')
+      logger.info('Dados recebidos:', feedbackData)
+      logger.info('Gestor/Usuario ID:', gestorIdOrUsuarioId)
+
       // Verificar se é ID de usuário e buscar colaborador correspondente
       let gestorColaboradorId = null
 
-      const { data: usuario } = await supabase
+      const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .select('id, nome')
         .eq('id', gestorIdOrUsuarioId)
         .maybeSingle()
+
+      if (usuarioError) {
+        logger.error('Erro ao buscar usuário:', usuarioError)
+      }
 
       if (usuario) {
         logger.info('🔍 Buscando colaborador para usuário:', usuario.nome)
@@ -298,6 +306,8 @@ export class RHService {
         insertData.gestor_id = gestorColaboradorId
       }
 
+      logger.info('💾 Dados para insert:', insertData)
+
       const { data, error } = await supabase
         .from('feedbacks')
         .insert(insertData)
@@ -309,7 +319,11 @@ export class RHService {
         .single()
 
       if (error) {
-        logger.error('Erro ao criar feedback:', error)
+        logger.error('❌ Erro ao inserir feedback no banco:', error)
+        logger.error('Código do erro:', error?.code)
+        logger.error('Mensagem:', error?.message)
+        logger.error('Detalhes:', error?.details)
+        logger.error('Hint:', error?.hint)
         throw error
       }
 

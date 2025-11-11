@@ -172,10 +172,15 @@ export function useCreateFeedback() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
       toast.success('✅ Feedback criado com sucesso!')
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       logger.error('Erro ao criar feedback:', error)
+      logger.error('Mensagem:', error?.message)
+      logger.error('Detalhes:', error?.details)
+      logger.error('Hint:', error?.hint)
+      logger.error('Code:', error?.code)
       supabaseAuditService.handleSchemaError(error, 'criar feedback')
-      toast.error('Erro ao criar feedback. Tente novamente.')
+      const errorMsg = error?.message || error?.details || 'Erro desconhecido'
+      toast.error(`Erro: ${errorMsg}`)
     }
   })
 }

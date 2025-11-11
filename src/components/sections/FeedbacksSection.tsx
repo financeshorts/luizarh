@@ -27,20 +27,25 @@ export function FeedbacksSection({ supervisorId, supervisorNome }: FeedbacksSect
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.colaborador_id || !formData.pauta.trim()) {
       toast.error('Preencha todos os campos obrigatórios')
       return
     }
 
+    console.log('📝 Dados do feedback:', formData)
+    console.log('👤 Supervisor ID:', supervisorId)
+
     try {
       await createFeedback.mutateAsync({
         feedbackData: formData,
-        supervisorId: supervisorId
+        gestorId: supervisorId
       })
       resetForm()
-    } catch (error) {
-      // Error handling is done in the mutation hook
+    } catch (error: any) {
+      console.error('❌ Erro ao salvar feedback:', error)
+      console.error('Detalhes do erro:', error?.message, error?.details)
+      toast.error(`Erro ao criar feedback: ${error?.message || 'Erro desconhecido'}`)
     }
   }
 
