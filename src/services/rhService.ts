@@ -296,7 +296,7 @@ export class RHService {
         })
         .select(`
           *,
-          colaborador:colaboradores(*),
+          colaborador:colaboradores!feedbacks_colaborador_id_fkey(*),
           gestor:colaboradores!feedbacks_gestor_id_fkey(*)
         `)
         .single()
