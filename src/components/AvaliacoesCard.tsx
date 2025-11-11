@@ -74,17 +74,17 @@ export function AvaliacoesCard() {
       const dataInicio = getDataInicio()
       const avaliacoesCompletas: AvaliacaoCompleta[] = []
 
+      // Buscar todos os colaboradores primeiro para fazer o mapeamento manualmente
+      const { data: todosColaboradores } = await supabase
+        .from('colaboradores')
+        .select('id, nome')
+
+      const colaboradoresMap = new Map(todosColaboradores?.map(c => [c.id, c.nome]) || [])
+
       // Buscar avaliações de desempenho
       let queryDesempenho = supabase
         .from('avaliacoes_desempenho')
-        .select(`
-          id,
-          data_avaliacao,
-          media_geral,
-          created_at,
-          colaborador:colaborador_id(id, nome),
-          avaliador:avaliador_id(id, nome)
-        `)
+        .select('*')
         .gte('data_avaliacao', dataInicio)
         .order('data_avaliacao', { ascending: false })
 
@@ -97,17 +97,20 @@ export function AvaliacoesCard() {
 
       const { data: desempenho, error: errorDesempenho } = await queryDesempenho
 
-      if (errorDesempenho) throw errorDesempenho
+      if (errorDesempenho) {
+        console.error('Erro ao buscar avaliações de desempenho:', errorDesempenho)
+        throw errorDesempenho
+      }
 
-      if (desempenho) {
+      if (desempenho && desempenho.length > 0) {
         desempenho.forEach((avaliacao: any) => {
           avaliacoesCompletas.push({
             id: avaliacao.id,
             tipo: 'desempenho',
-            colaborador_nome: avaliacao.colaborador?.nome || 'N/A',
-            avaliador_nome: avaliacao.avaliador?.nome || 'N/A',
+            colaborador_nome: colaboradoresMap.get(avaliacao.colaborador_id) || 'N/A',
+            avaliador_nome: colaboradoresMap.get(avaliacao.avaliador_id) || 'N/A',
             data_avaliacao: avaliacao.data_avaliacao,
-            nota_final: avaliacao.media_geral || 0,
+            nota_final: parseFloat(avaliacao.media_geral) || 0,
             created_at: avaliacao.created_at
           })
         })
@@ -116,47 +119,35 @@ export function AvaliacoesCard() {
       // Buscar avaliações de experiência
       let queryExperiencia = supabase
         .from('avaliacoes_experiencia')
-        .select(`
-          id,
-          data_avaliacao,
-          nota_final,
-          created_at,
-          colaborador:colaborador_id(id, nome),
-          avaliador_id
-        `)
+        .select('*')
         .gte('data_avaliacao', dataInicio)
         .order('data_avaliacao', { ascending: false })
 
       if (filtroColaborador !== 'todos') {
         queryExperiencia = queryExperiencia.eq('colaborador_id', filtroColaborador)
       }
+      if (filtroAvaliador !== 'todos') {
+        queryExperiencia = queryExperiencia.eq('avaliador_id', filtroAvaliador)
+      }
 
       const { data: experiencia, error: errorExperiencia } = await queryExperiencia
 
-      if (errorExperiencia) throw errorExperiencia
+      if (errorExperiencia) {
+        console.error('Erro ao buscar avaliações de experiência:', errorExperiencia)
+        throw errorExperiencia
+      }
 
-      if (experiencia) {
-        // Buscar nomes dos avaliadores
-        const avaliadorIds = experiencia.map((av: any) => av.avaliador_id).filter(Boolean)
-        const { data: avaliadores } = await supabase
-          .from('colaboradores')
-          .select('id, nome')
-          .in('id', avaliadorIds)
-
-        const avaliadoresMap = new Map(avaliadores?.map(av => [av.id, av.nome]) || [])
-
+      if (experiencia && experiencia.length > 0) {
         experiencia.forEach((avaliacao: any) => {
-          if (filtroAvaliador === 'todos' || avaliacao.avaliador_id === filtroAvaliador) {
-            avaliacoesCompletas.push({
-              id: avaliacao.id,
-              tipo: 'experiencia',
-              colaborador_nome: avaliacao.colaborador?.nome || 'N/A',
-              avaliador_nome: avaliadoresMap.get(avaliacao.avaliador_id) || 'N/A',
-              data_avaliacao: avaliacao.data_avaliacao,
-              nota_final: avaliacao.nota_final || 0,
-              created_at: avaliacao.created_at
-            })
-          }
+          avaliacoesCompletas.push({
+            id: avaliacao.id,
+            tipo: 'experiencia',
+            colaborador_nome: colaboradoresMap.get(avaliacao.colaborador_id) || 'N/A',
+            avaliador_nome: colaboradoresMap.get(avaliacao.avaliador_id) || 'N/A',
+            data_avaliacao: avaliacao.data_avaliacao,
+            nota_final: parseFloat(avaliacao.media_geral) || 0,
+            created_at: avaliacao.created_at
+          })
         })
       }
 
@@ -166,9 +157,10 @@ export function AvaliacoesCard() {
       )
 
       setAvaliacoes(avaliacoesCompletas)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar avaliações:', error)
-      toast.error('Erro ao carregar avaliações')
+      const errorMessage = error?.message || 'Erro desconhecido ao carregar avaliações'
+      toast.error(`Erro ao carregar avaliações: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
