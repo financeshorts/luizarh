@@ -13,6 +13,7 @@ import { FeedbacksSection } from './sections/FeedbacksSection'
 import { AvaliarSection } from './sections/AvaliarSection'
 import { AvaliacaoExperienciaSection } from './sections/AvaliacaoExperienciaSection'
 import { AvaliacaoFeedbackSection } from './sections/AvaliacaoFeedbackSection'
+import { AvaliacaoDesempenhoSupervisorSection } from './sections/AvaliacaoDesempenhoSupervisorSection'
 import { MovimentacaoRequisicaoSection } from './sections/MovimentacaoRequisicaoSection'
 import { DashboardMetricasRH } from './DashboardMetricasRH'
 import { DashboardIndicadoresRH } from './DashboardIndicadoresRH'
@@ -63,16 +64,25 @@ export function UnifiedHRSystem({ user, onLogout }: UnifiedHRSystemProps) {
         return <UserManagement />
       
       case 'feedbacks':
-        return <FeedbacksSection gestorNome={user.nome} />
+        return <FeedbacksSection supervisorId={user.id} supervisorNome={user.nome} />
 
       case 'avaliar':
-        return <AvaliarSection gestorId={user.id} gestorNome={user.nome} isRH={user.perfil === 'rh'} />
+        return <AvaliarSection supervisorId={user.id} supervisorNome={user.nome} isRH={user.perfil === 'rh'} />
 
       case 'avaliacao-experiencia':
         return <AvaliacaoExperienciaSection userId={user.id} isRH={user.perfil === 'rh'} />
 
       case 'avaliacao-feedback':
         return <AvaliacaoFeedbackSection userId={user.id} />
+
+      case 'avaliacao-supervisor':
+        return (
+          <AvaliacaoDesempenhoSupervisorSection
+            supervisorId={user.id}
+            supervisorNome={user.nome}
+            isBPRH={user.perfil === 'bp_rh' || user.perfil === 'rh'}
+          />
+        )
 
       case 'movimentacao-requisicao':
         return <MovimentacaoRequisicaoSection />

@@ -16,7 +16,8 @@ import {
   Layers,
   ChevronDown,
   Home,
-  Settings
+  Settings,
+  Target
 } from 'lucide-react'
 import { User } from '../lib/auth'
 import { useSystemSettings } from '../hooks/useSystemSettings'
@@ -65,6 +66,7 @@ export function Sidebar({ user, activeSection, onSectionChange, onLogout }: Side
         { id: 'avaliacao-experiencia', label: 'Avaliação Experiência', icon: Award },
         { id: 'avaliacao-feedback', label: 'Avaliação Desempenho', icon: TrendingUp },
         { id: 'feedbacks', label: 'Feedbacks', icon: MessageCircle },
+        { id: 'avaliacao-supervisor', label: 'Avaliação Supervisor', icon: Target },
       ]
     },
     {
