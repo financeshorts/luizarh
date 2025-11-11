@@ -124,6 +124,14 @@ export class AuthService {
   isGestor(): boolean {
     return this.currentUser?.perfil === 'gestor'
   }
+
+  canEvaluate(): boolean {
+    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'gestor'
+  }
+
+  isAdmin(): boolean {
+    return this.currentUser?.perfil === 'rh'
+  }
 }
 
 export const authService = new AuthService()
