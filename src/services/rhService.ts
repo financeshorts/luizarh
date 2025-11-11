@@ -177,11 +177,42 @@ export class RHService {
     }
   }
 
-  async createAvaliacao(avaliacaoData: AvaliacaoForm, avaliadorId: string): Promise<Avaliacao> {
+  async createAvaliacao(avaliacaoData: AvaliacaoForm, avaliadorIdOrUsuarioId: string): Promise<Avaliacao> {
     try {
+      // Verificar se é ID de usuário e buscar colaborador correspondente
+      let avaliadorColaboradorId = avaliadorIdOrUsuarioId
+
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('id, nome')
+        .eq('id', avaliadorIdOrUsuarioId)
+        .maybeSingle()
+
+      if (usuario) {
+        logger.info('🔍 Buscando colaborador para usuário:', usuario.nome)
+
+        const nomePartes = usuario.nome.trim().split(' ')
+        const primeiroNome = nomePartes[0]
+        const ultimoNome = nomePartes[nomePartes.length - 1]
+
+        const { data: colaboradores } = await supabase
+          .from('colaboradores')
+          .select('id, nome')
+          .or(`nome.ilike.%${primeiroNome}%${ultimoNome}%,nome.ilike.%${usuario.nome}%`)
+          .limit(10)
+
+        if (colaboradores && colaboradores.length > 0) {
+          avaliadorColaboradorId = colaboradores[0].id
+          logger.info('✅ Colaborador encontrado:', colaboradores[0].nome)
+        } else {
+          logger.error('❌ Nenhum colaborador encontrado para:', usuario.nome)
+          throw new Error(`Colaborador não encontrado para "${usuario.nome}". Cadastre um colaborador com nome similar primeiro.`)
+        }
+      }
+
       const insertData = {
         colaborador_id: avaliacaoData.colaborador_id,
-        avaliador_id: avaliadorId,
+        avaliador_id: avaliadorColaboradorId,
         trabalho_equipe: avaliacaoData.trabalho_equipe,
         comunicacao: avaliacaoData.comunicacao,
         responsabilidade: avaliacaoData.responsabilidade,
@@ -193,7 +224,7 @@ export class RHService {
         data_avaliacao: new Date().toISOString().split('T')[0]
       }
 
-      logger.info('Inserindo avaliação:', insertData)
+      logger.info('📝 Inserindo avaliação:', insertData)
 
       const { data, error } = await supabase
         .from('avaliacoes_desempenho')
@@ -220,13 +251,44 @@ export class RHService {
 
   // ==================== FEEDBACKS ====================
 
-  async createFeedback(feedbackData: FeedbackForm, gestorId: string): Promise<Feedback> {
+  async createFeedback(feedbackData: FeedbackForm, gestorIdOrUsuarioId: string): Promise<Feedback> {
     try {
+      // Verificar se é ID de usuário e buscar colaborador correspondente
+      let gestorColaboradorId = gestorIdOrUsuarioId
+
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('id, nome')
+        .eq('id', gestorIdOrUsuarioId)
+        .maybeSingle()
+
+      if (usuario) {
+        logger.info('🔍 Buscando colaborador para usuário:', usuario.nome)
+
+        const nomePartes = usuario.nome.trim().split(' ')
+        const primeiroNome = nomePartes[0]
+        const ultimoNome = nomePartes[nomePartes.length - 1]
+
+        const { data: colaboradores } = await supabase
+          .from('colaboradores')
+          .select('id, nome')
+          .or(`nome.ilike.%${primeiroNome}%${ultimoNome}%,nome.ilike.%${usuario.nome}%`)
+          .limit(10)
+
+        if (colaboradores && colaboradores.length > 0) {
+          gestorColaboradorId = colaboradores[0].id
+          logger.info('✅ Colaborador encontrado:', colaboradores[0].nome)
+        } else {
+          logger.error('❌ Nenhum colaborador encontrado para:', usuario.nome)
+          throw new Error(`Colaborador não encontrado para "${usuario.nome}". Cadastre um colaborador com nome similar primeiro.`)
+        }
+      }
+
       const { data, error } = await supabase
         .from('feedbacks')
         .insert({
           colaborador_id: feedbackData.colaborador_id,
-          gestor_id: gestorId,
+          gestor_id: gestorColaboradorId,
           pauta: feedbackData.pauta,
           posicionamento_colaborador: feedbackData.posicionamento_colaborador,
           observacoes: feedbackData.observacoes,
