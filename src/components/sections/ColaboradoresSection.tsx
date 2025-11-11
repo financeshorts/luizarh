@@ -308,9 +308,9 @@ export function ColaboradoresSection({ isRH, supervisorId, supervisorName, onAva
                       <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(colaborador.status)}`}>
                         {getStatusLabel(colaborador.status)}
                       </span>
-                      {!isRH && (
+                      {!isRH && supervisorName && (
                         <span className="ml-2 text-xs text-gray-500">
-                          Gestor: {colaborador.gestor_nome || gestorName}
+                          Gestor: {supervisorName}
                         </span>
                       )}
                     </div>
