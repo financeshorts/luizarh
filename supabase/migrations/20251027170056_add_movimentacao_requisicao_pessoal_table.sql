@@ -1,18 +1,18 @@
 /*
-  # Criar Tabela de Movimentação/Requisição de Pessoal
+  # Criar Tabela de Movimentacao/Requisicao de Pessoal
 
   1. Nova Tabela: movimentacao_requisicao_pessoal
-    - Sistema completo de gestão de movimentações e requisições
-    - Código: GPFR-G&G-MP01-2025
+    - Sistema completo de gestao de movimentacoes e requisicoes
+    - Codigo: GPFR-G&G-MP01-2025
     - Campos:
       - `id` (uuid, primary key)
-      - `requisitante_id` (uuid, not null) - ID do usuário requisitante
+      - `requisitante_id` (uuid, not null) - ID do usuario requisitante
       - `requisitante_nome` (text)
       - `area_requisitante` (text)
       - `data_requisicao` (date)
       - `previsao_fechamento` (date)
-      - `unidade` (text) - Unidade da movimentação
-      - `motivo` (text) - Motivo da movimentação
+      - `unidade` (text) - Unidade da movimentacao
+      - `motivo` (text) - Motivo da movimentacao
       - `cargo` (text)
       - `sexo` (text)
       - `area_setor` (text)
@@ -29,7 +29,7 @@
         - `desligamento_periodo_experiencia` (text)
         - `desligamento_recontratacao` (text)
         - `desligamento_justificativa` (text)
-      - Campos de Promoção:
+      - Campos de Promocao:
         - `promocao_unidade_atual` (text)
         - `promocao_unidade_proposta` (text)
         - `promocao_setor_atual` (text)
@@ -46,7 +46,7 @@
         - `promocao_total_mes_proposto` (numeric)
         - `promocao_reajuste_valor` (numeric)
         - `promocao_reajuste_percentual` (numeric)
-      - Recursos Necessários:
+      - Recursos Necessarios:
         - `recurso_mesa` (boolean)
         - `recurso_cadeira` (boolean)
         - `recurso_apoio_pes` (boolean)
@@ -55,13 +55,13 @@
       - `created_at` (timestamptz)
       - `updated_at` (timestamptz)
 
-  2. Segurança
+  2. Seguranca
     - RLS habilitado
-    - Políticas abertas para autenticação customizada
+    - Politicas abertas para autenticacao customizada
 
-  3. Validações
-    - Unidades: lista específica de 7 unidades
-    - Motivos: lista específica de 9 motivos
+  3. Validacoes
+    - Unidades: lista especifica de 7 unidades
+    - Motivos: lista especifica de 9 motivos
     - Status: pendente, aprovada, rejeitada
 */
 
@@ -73,16 +73,16 @@ CREATE TABLE IF NOT EXISTS movimentacao_requisicao_pessoal (
   data_requisicao date NOT NULL DEFAULT CURRENT_DATE,
   previsao_fechamento date,
   
-  unidade text CHECK (unidade IN ('Cristalina', 'Correntina', 'Corporativo', 'Ibicoara', 'Papanduva', 'São Gabriel', 'Uberlandia')),
+  unidade text CHECK (unidade IN ('Cristalina', 'Correntina', 'Corporativo', 'Ibicoara', 'Papanduva', 'Sao Gabriel', 'Uberlandia')),
   motivo text CHECK (motivo IN (
     'Aumento de Quadro',
-    'Substituição',
-    'Transferência - Área',
-    'Promoção',
-    'Demissão',
-    'Estágio',
-    'Prestador de Serviço',
-    'Transferência - Unidade',
+    'Substituicao',
+    'Transferencia - Area',
+    'Promocao',
+    'Demissao',
+    'Estagio',
+    'Prestador de Servico',
+    'Transferencia - Unidade',
     'Aprendiz'
   )),
   
@@ -97,10 +97,10 @@ CREATE TABLE IF NOT EXISTS movimentacao_requisicao_pessoal (
   justificativa text,
   
   desligamento_nome_colaborador text,
-  desligamento_tipo_rescisao text CHECK (desligamento_tipo_rescisao IN ('Iniciativa da Empresa', 'Pedido de Demissão', 'Término de Contrato') OR desligamento_tipo_rescisao IS NULL),
+  desligamento_tipo_rescisao text CHECK (desligamento_tipo_rescisao IN ('Iniciativa da Empresa', 'Pedido de Demissao', 'Termino de Contrato') OR desligamento_tipo_rescisao IS NULL),
   desligamento_aviso text CHECK (desligamento_aviso IN ('Indenizado', 'Trabalhado', 'Justa Causa') OR desligamento_aviso IS NULL),
   desligamento_periodo_experiencia text CHECK (desligamento_periodo_experiencia IN ('45 dias', '90 dias') OR desligamento_periodo_experiencia IS NULL),
-  desligamento_recontratacao text CHECK (desligamento_recontratacao IN ('Poderá retornar', 'Não poderá retornar') OR desligamento_recontratacao IS NULL),
+  desligamento_recontratacao text CHECK (desligamento_recontratacao IN ('Podera retornar', 'Nao podera retornar') OR desligamento_recontratacao IS NULL),
   desligamento_justificativa text,
   
   promocao_unidade_atual text,
@@ -136,13 +136,13 @@ ALTER TABLE movimentacao_requisicao_pessoal ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Permitir leitura para todos"
   ON movimentacao_requisicao_pessoal FOR SELECT USING (true);
 
-CREATE POLICY "Permitir inserção para todos"
+CREATE POLICY "Permitir insercao para todos"
   ON movimentacao_requisicao_pessoal FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Permitir atualização para todos"
+CREATE POLICY "Permitir atualizacao para todos"
   ON movimentacao_requisicao_pessoal FOR UPDATE USING (true) WITH CHECK (true);
 
-CREATE POLICY "Permitir exclusão para todos"
+CREATE POLICY "Permitir exclusao para todos"
   ON movimentacao_requisicao_pessoal FOR DELETE USING (true);
 
 CREATE INDEX IF NOT EXISTS idx_movimentacao_requisicao_requisitante ON movimentacao_requisicao_pessoal(requisitante_id);

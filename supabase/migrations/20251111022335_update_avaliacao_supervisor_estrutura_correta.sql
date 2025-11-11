@@ -1,18 +1,18 @@
 /*
-  # Atualizar Estrutura da Avaliação de Desempenho Supervisor
+  # Atualizar Estrutura da Avaliaçao de Desempenho Supervisor
   
   1. Mudanças
     - Remover colunas antigas (estrutura anterior de 145 pontos)
     - Adicionar nova estrutura conforme PDF (100 pontos)
     - Adicionar campo unidade
-    - Ajustar sistema de pontuação
+    - Ajustar sistema de pontuaçao
   
   2. Nova Estrutura (100 pontos total)
     - Assiduidade (25 pts): Faltas (20) + Atestados (5)
-    - Disciplina (25 pts): Advertências (15) + Suspensões (10)
-    - Saúde e Segurança (10 pts): Restrições SESMT
-    - Resultados (25 pts): Desempenho técnico
-    - Desenvolvimento (15 pts): Participação em treinamentos
+    - Disciplina (25 pts): Advertencias (15) + Suspensoes (10)
+    - Saude e Segurança (10 pts): Restriçoes SESMT
+    - Resultados (25 pts): Desempenho tecnico
+    - Desenvolvimento (15 pts): Participaçao em treinamentos
 */
 
 -- Adicionar coluna unidade
@@ -34,14 +34,14 @@ ADD COLUMN IF NOT EXISTS disciplina_advertencias_pontos integer DEFAULT 0 CHECK 
 ALTER TABLE avaliacao_desempenho_supervisor 
 ADD COLUMN IF NOT EXISTS disciplina_suspensoes integer DEFAULT 0 CHECK (disciplina_suspensoes >= 0 AND disciplina_suspensoes <= 10);
 
--- 3. Saúde e Segurança (10 pontos)
+-- 3. Saude e Segurança (10 pontos)
 ALTER TABLE avaliacao_desempenho_supervisor 
 ADD COLUMN IF NOT EXISTS saude_restricoes_sesmt integer DEFAULT 0 CHECK (saude_restricoes_sesmt >= 0 AND saude_restricoes_sesmt <= 10);
 
 ALTER TABLE avaliacao_desempenho_supervisor 
 ADD COLUMN IF NOT EXISTS saude_obs text;
 
--- 4. Resultados na Área (25 pontos)
+-- 4. Resultados na Area (25 pontos)
 ALTER TABLE avaliacao_desempenho_supervisor 
 ADD COLUMN IF NOT EXISTS resultados_desempenho_tecnico integer DEFAULT 0 CHECK (resultados_desempenho_tecnico >= 0 AND resultados_desempenho_tecnico <= 25);
 
@@ -55,4 +55,4 @@ ADD COLUMN IF NOT EXISTS desenvolvimento_treinamentos integer DEFAULT 0 CHECK (d
 ALTER TABLE avaliacao_desempenho_supervisor 
 ADD COLUMN IF NOT EXISTS desenvolvimento_obs text;
 
--- Comentário: Mantemos as colunas antigas por compatibilidade, mas o sistema usará as novas
+-- Comentario: Mantemos as colunas antigas por compatibilidade, mas o sistema usara as novas
