@@ -5,12 +5,14 @@ import { AnimatedCard } from '../AnimatedCard'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { AvaliacaoExperiencia, Colaborador, COMPETENCIAS_EXPERIENCIA } from '../../types'
+import { logger } from '../../lib/logger'
 
 interface AvaliacaoExperienciaSectionProps {
+  userId: string
   isRH?: boolean
 }
 
-export function AvaliacaoExperienciaSection({ isRH = false }: AvaliacaoExperienciaSectionProps) {
+export function AvaliacaoExperienciaSection({ userId, isRH = false }: AvaliacaoExperienciaSectionProps) {
   const [showForm, setShowForm] = useState(false)
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoExperiencia[]>([])
@@ -118,13 +120,45 @@ export function AvaliacaoExperienciaSection({ isRH = false }: AvaliacaoExperienc
 
     try {
       const nota_final = calcularNotaFinal(formData)
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
+
+      // Buscar colaborador correspondente ao usuário
+      let avaliadorColaboradorId = userId
+
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('id, nome')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (usuario) {
+        logger.info('🔍 Buscando colaborador para usuário:', usuario.nome)
+
+        const nomePartes = usuario.nome.trim().split(' ')
+        const primeiroNome = nomePartes[0]
+        const ultimoNome = nomePartes[nomePartes.length - 1]
+
+        const { data: colaboradores } = await supabase
+          .from('colaboradores')
+          .select('id, nome')
+          .or(`nome.ilike.%${primeiroNome}%${ultimoNome}%,nome.ilike.%${usuario.nome}%`)
+          .limit(10)
+
+        if (colaboradores && colaboradores.length > 0) {
+          avaliadorColaboradorId = colaboradores[0].id
+          logger.info('✅ Colaborador encontrado:', colaboradores[0].nome)
+        } else {
+          logger.error('❌ Nenhum colaborador encontrado para:', usuario.nome)
+          toast.error(`Colaborador não encontrado para "${usuario.nome}". Cadastre um colaborador com nome similar primeiro.`)
+          setLoading(false)
+          return
+        }
+      }
 
       const { error } = await supabase
         .from('avaliacoes_experiencia')
         .insert({
           ...formData,
-          avaliador_id: user.id,
+          avaliador_id: avaliadorColaboradorId,
           nota_final
         })
 
