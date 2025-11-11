@@ -92,6 +92,12 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
       return
     }
 
+    if (!supervisorId || supervisorId === '') {
+      toast.error('ID do supervisor inválido')
+      console.error('supervisorId está vazio ou inválido:', supervisorId)
+      return
+    }
+
     try {
       const totalPontos = calcularTotalPontos(formData)
       const percentualFinal = (totalPontos / 100) * 100
@@ -99,55 +105,80 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
       const colaborador = colaboradores.find(c => c.id === formData.colaborador_id)
 
+      console.log('Tentando salvar avaliação com:', {
+        colaborador_id: formData.colaborador_id,
+        supervisor_id: supervisorId,
+        supervisor_nome: supervisorNome
+      })
+
+      const { data: supervisorExists } = await supabase
+        .from('colaboradores')
+        .select('id')
+        .eq('id', supervisorId)
+        .single()
+
+      const dadosInsert: any = {
+        colaborador_id: formData.colaborador_id,
+        unidade: formData.unidade,
+        periodo_avaliacao: formData.periodo_avaliacao,
+        assiduidade_faltas_injustificadas: formData.assiduidade_faltas_injustificadas,
+        assiduidade_atestados_medicos: formData.assiduidade_atestados_medicos,
+        assiduidade_obs: formData.assiduidade_obs || null,
+        disciplina_advertencias_pontos: formData.disciplina_advertencias_pontos,
+        disciplina_suspensoes: formData.disciplina_suspensoes,
+        disciplina_obs: formData.disciplina_obs || null,
+        saude_restricoes_sesmt: formData.saude_restricoes_sesmt,
+        saude_obs: formData.saude_obs || null,
+        resultados_desempenho_tecnico: formData.resultados_desempenho_tecnico,
+        resultados_obs: formData.resultados_obs || null,
+        desenvolvimento_treinamentos: formData.desenvolvimento_treinamentos,
+        desenvolvimento_obs: formData.desenvolvimento_obs || null,
+        assiduidade_faltas: 0,
+        assiduidade_atestados: 0,
+        disciplina_advertencias: 0,
+        disciplina_comportamento: 0,
+        produtividade_qualidade: 0,
+        produtividade_quantidade: 0,
+        produtividade_prazos: 0,
+        relacionamento_equipe: 0,
+        relacionamento_clientes: 0,
+        postura_apresentacao: 0,
+        postura_comunicacao: 0,
+        engajamento_iniciativa: 0,
+        engajamento_comprometimento: 0,
+        total_pontos: totalPontos,
+        percentual_final: percentualFinal,
+        classificacao: classificacao,
+        nome_supervisor: supervisorNome,
+        nome_colaborador_avaliado: colaborador?.nome,
+        confirmacao_supervisor: true,
+        data_confirmacao_supervisor: new Date().toISOString()
+      }
+
+      if (supervisorExists) {
+        dadosInsert.supervisor_id = supervisorId
+      }
+
       const { error } = await supabase
         .from('avaliacao_desempenho_supervisor')
-        .insert({
+        .insert(dadosInsert)
+
+      if (error) {
+        console.error('Erro detalhado:', error)
+        console.error('Dados enviados:', {
           colaborador_id: formData.colaborador_id,
           supervisor_id: supervisorId,
-          unidade: formData.unidade,
-          periodo_avaliacao: formData.periodo_avaliacao,
-          assiduidade_faltas_injustificadas: formData.assiduidade_faltas_injustificadas,
-          assiduidade_atestados_medicos: formData.assiduidade_atestados_medicos,
-          assiduidade_obs: formData.assiduidade_obs || null,
-          disciplina_advertencias_pontos: formData.disciplina_advertencias_pontos,
-          disciplina_suspensoes: formData.disciplina_suspensoes,
-          disciplina_obs: formData.disciplina_obs || null,
-          saude_restricoes_sesmt: formData.saude_restricoes_sesmt,
-          saude_obs: formData.saude_obs || null,
-          resultados_desempenho_tecnico: formData.resultados_desempenho_tecnico,
-          resultados_obs: formData.resultados_obs || null,
-          desenvolvimento_treinamentos: formData.desenvolvimento_treinamentos,
-          desenvolvimento_obs: formData.desenvolvimento_obs || null,
-          assiduidade_faltas: 0,
-          assiduidade_atestados: 0,
-          disciplina_advertencias: 0,
-          disciplina_comportamento: 0,
-          produtividade_qualidade: 0,
-          produtividade_quantidade: 0,
-          produtividade_prazos: 0,
-          relacionamento_equipe: 0,
-          relacionamento_clientes: 0,
-          postura_apresentacao: 0,
-          postura_comunicacao: 0,
-          engajamento_iniciativa: 0,
-          engajamento_comprometimento: 0,
-          total_pontos: totalPontos,
-          percentual_final: percentualFinal,
-          classificacao: classificacao,
-          nome_supervisor: supervisorNome,
-          nome_colaborador_avaliado: colaborador?.nome,
-          confirmacao_supervisor: true,
-          data_confirmacao_supervisor: new Date().toISOString()
+          unidade: formData.unidade
         })
-
-      if (error) throw error
+        throw error
+      }
 
       toast.success('✅ Avaliação criada com sucesso!')
       resetForm()
       carregarAvaliacoes()
     } catch (error: any) {
       console.error('Erro ao salvar avaliação:', error)
-      toast.error(`Erro ao salvar avaliação: ${error.message}`)
+      toast.error(`Erro: ${error.message || 'Não foi possível salvar a avaliação'}`)
     }
   }
 
