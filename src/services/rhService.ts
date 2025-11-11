@@ -22,9 +22,11 @@ export class RHService {
         .select('*')
         .order('nome')
 
-      if (gestorId) {
-        query = query.eq('gestor_id', gestorId)
-      }
+      // Não filtra por gestor_id se o filtro estiver ativo
+      // Isso permite que supervisores vejam todos os colaboradores
+      // if (gestorId) {
+      //   query = query.eq('gestor_id', gestorId)
+      // }
 
       const { data, error } = await query
 
@@ -33,6 +35,7 @@ export class RHService {
         throw error
       }
 
+      logger.info(`✅ ${data?.length || 0} colaboradores carregados`)
       return data || []
     } catch (error) {
       logger.error('Erro no serviço getColaboradores:', error)
@@ -254,7 +257,7 @@ export class RHService {
   async createFeedback(feedbackData: FeedbackForm, gestorIdOrUsuarioId: string): Promise<Feedback> {
     try {
       // Verificar se é ID de usuário e buscar colaborador correspondente
-      let gestorColaboradorId = gestorIdOrUsuarioId
+      let gestorColaboradorId = null
 
       const { data: usuario } = await supabase
         .from('usuarios')
@@ -279,21 +282,25 @@ export class RHService {
           gestorColaboradorId = colaboradores[0].id
           logger.info('✅ Colaborador encontrado:', colaboradores[0].nome)
         } else {
-          logger.error('❌ Nenhum colaborador encontrado para:', usuario.nome)
-          throw new Error(`Colaborador não encontrado para "${usuario.nome}". Cadastre um colaborador com nome similar primeiro.`)
+          logger.warn('⚠️ Nenhum colaborador encontrado para:', usuario.nome, '- Salvando sem gestor_id')
         }
+      }
+
+      const insertData: any = {
+        colaborador_id: feedbackData.colaborador_id,
+        pauta: feedbackData.pauta,
+        posicionamento_colaborador: feedbackData.posicionamento_colaborador || null,
+        observacoes: feedbackData.observacoes || null,
+        plano_acao: feedbackData.plano_acao || null
+      }
+
+      if (gestorColaboradorId) {
+        insertData.gestor_id = gestorColaboradorId
       }
 
       const { data, error } = await supabase
         .from('feedbacks')
-        .insert({
-          colaborador_id: feedbackData.colaborador_id,
-          gestor_id: gestorColaboradorId,
-          pauta: feedbackData.pauta,
-          posicionamento_colaborador: feedbackData.posicionamento_colaborador,
-          observacoes: feedbackData.observacoes,
-          plano_acao: feedbackData.plano_acao
-        })
+        .insert(insertData)
         .select(`
           *,
           colaborador:colaboradores!feedbacks_colaborador_id_fkey(*),
