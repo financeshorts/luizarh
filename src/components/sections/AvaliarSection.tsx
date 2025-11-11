@@ -8,20 +8,20 @@ import { PERGUNTAS_EXPERIENCIA } from '../../types'
 import toast from 'react-hot-toast'
 
 interface AvaliarSectionProps {
-  gestorId: string
-  gestorNome: string
+  supervisorId: string
+  supervisorNome: string
   isRH?: boolean
 }
 
-export function AvaliarSection({ gestorId, gestorNome, isRH = false }: AvaliarSectionProps) {
+export function AvaliarSection({ supervisorId, supervisorNome, isRH = false }: AvaliarSectionProps) {
   const [step, setStep] = useState(1)
   const [colaboradorId, setColaboradorId] = useState('')
   const [respostas, setRespostas] = useState<Record<string, number>>({})
   const [observacoes, setObservacoes] = useState('')
   const [isComplete, setIsComplete] = useState(false)
 
-  // RH vê todos os colaboradores (gestorId = undefined), gestores veem apenas os seus
-  const { data: colaboradores = [], isLoading: loadingColaboradores } = useColaboradores(isRH ? undefined : gestorId)
+  // RH vê todos os colaboradores (supervisorId = undefined), supervisores veem apenas os seus
+  const { data: colaboradores = [], isLoading: loadingColaboradores } = useColaboradores(isRH ? undefined : supervisorId)
   const createAvaliacao = useCreateAvaliacao()
 
   const selectedColaborador = colaboradores.find(c => c.id === colaboradorId)
@@ -54,13 +54,13 @@ export function AvaliarSection({ gestorId, gestorNome, isRH = false }: AvaliarSe
     try {
       await createAvaliacao.mutateAsync({
         avaliacaoData,
-        avaliadorId: gestorId
+        avaliadorId: supervisorId
       })
       setIsComplete(true)
     } catch (error) {
       // Error handling is done in the mutation hook
     }
-  }, [colaboradorId, respostas, observacoes, createAvaliacao, gestorId])
+  }, [colaboradorId, respostas, observacoes, createAvaliacao, supervisorId])
 
   const resetForm = useCallback(() => {
     setIsComplete(false)

@@ -2,7 +2,7 @@ export interface User {
   id: string
   nome: string
   telefone: string
-  perfil: 'rh' | 'gestor' | 'colaborador'
+  perfil: 'rh' | 'supervisor' | 'colaborador' | 'bp_rh'
 }
 
 export interface AuthResponse {
@@ -89,7 +89,7 @@ export class AuthService {
         id: usuario.id,
         nome: usuario.nome,
         telefone: usuario.telefone,
-        perfil: usuario.perfil as 'rh' | 'gestor' | 'colaborador'
+        perfil: usuario.perfil as 'rh' | 'supervisor' | 'colaborador' | 'bp_rh'
       }
 
       this.currentUser = user
@@ -121,16 +121,20 @@ export class AuthService {
     return this.currentUser?.perfil === 'rh'
   }
 
-  isGestor(): boolean {
-    return this.currentUser?.perfil === 'gestor'
+  isSupervisor(): boolean {
+    return this.currentUser?.perfil === 'supervisor'
+  }
+
+  isBPRH(): boolean {
+    return this.currentUser?.perfil === 'bp_rh'
   }
 
   canEvaluate(): boolean {
-    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'gestor'
+    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'supervisor' || this.currentUser?.perfil === 'bp_rh'
   }
 
   isAdmin(): boolean {
-    return this.currentUser?.perfil === 'rh'
+    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'bp_rh'
   }
 }
 

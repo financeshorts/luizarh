@@ -5,7 +5,7 @@ export interface Usuario {
   id: string
   nome: string
   telefone: string
-  perfil: 'rh' | 'gestor' | 'colaborador'
+  perfil: 'rh' | 'supervisor' | 'colaborador' | 'bp_rh'
   ativo: boolean
   created_at?: string
   updated_at?: string
@@ -14,7 +14,7 @@ export interface Usuario {
 export interface UsuarioForm {
   nome: string
   telefone: string
-  perfil: 'rh' | 'gestor' | 'colaborador'
+  perfil: 'rh' | 'supervisor' | 'colaborador' | 'bp_rh'
   ativo: boolean
 }
 

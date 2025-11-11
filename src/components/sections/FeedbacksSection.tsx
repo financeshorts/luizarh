@@ -7,11 +7,11 @@ import { LoadingSpinner } from '../LoadingSpinner'
 import toast from 'react-hot-toast'
 
 interface FeedbacksSectionProps {
-  gestorId: string
-  gestorNome: string
+  supervisorId: string
+  supervisorNome: string
 }
 
-export function FeedbacksSection({ gestorId, gestorNome }: FeedbacksSectionProps) {
+export function FeedbacksSection({ supervisorId, supervisorNome }: FeedbacksSectionProps) {
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     colaborador_id: '',
@@ -21,8 +21,8 @@ export function FeedbacksSection({ gestorId, gestorNome }: FeedbacksSectionProps
     plano_acao: ''
   })
 
-  const { data: feedbacks = [], isLoading: loadingFeedbacks } = useFeedbacks(gestorId)
-  const { data: colaboradores = [] } = useColaboradores(gestorId)
+  const { data: feedbacks = [], isLoading: loadingFeedbacks } = useFeedbacks(supervisorId)
+  const { data: colaboradores = [] } = useColaboradores(supervisorId)
   const createFeedback = useCreateFeedback()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +36,7 @@ export function FeedbacksSection({ gestorId, gestorNome }: FeedbacksSectionProps
     try {
       await createFeedback.mutateAsync({
         feedbackData: formData,
-        gestorId: gestorId
+        supervisorId: supervisorId
       })
       resetForm()
     } catch (error) {
@@ -206,7 +206,7 @@ export function FeedbacksSection({ gestorId, gestorNome }: FeedbacksSectionProps
                     <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                       <div className="flex items-center">
                         <User className="w-4 h-4 mr-1" />
-                        {feedback.gestor?.nome || gestorNome}
+                        {feedback.gestor?.nome || supervisorNome}
                       </div>
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1" />

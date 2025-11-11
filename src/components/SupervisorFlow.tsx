@@ -7,26 +7,30 @@ import { FeedbacksSection } from './sections/FeedbacksSection'
 import { AvaliacaoExperienciaSection } from './sections/AvaliacaoExperienciaSection'
 import { AvaliacaoFeedbackSection } from './sections/AvaliacaoFeedbackSection'
 import { MovimentacaoRequisicaoSection } from './sections/MovimentacaoRequisicaoSection'
+import { AvaliacaoDesempenhoSupervisorSection } from './sections/AvaliacaoDesempenhoSupervisorSection'
 import { useSystemSettings } from '../hooks/useSystemSettings'
 import { User } from '../types'
 
-interface GestorFlowProps {
+interface SupervisorFlowProps {
   user: User
   onLogout: () => void
 }
 
-export function GestorFlow({ user, onLogout }: GestorFlowProps) {
-  const [activeTab, setActiveTab] = useState<'colaboradores' | 'avaliar' | 'feedbacks' | 'avaliacao-experiencia' | 'avaliacao-feedback' | 'movimentacao-requisicao'>('colaboradores')
+export function SupervisorFlow({ user, onLogout }: SupervisorFlowProps) {
+  const [activeTab, setActiveTab] = useState<'colaboradores' | 'avaliar' | 'feedbacks' | 'avaliacao-experiencia' | 'avaliacao-feedback' | 'avaliacao-desempenho-supervisor' | 'movimentacao-requisicao'>('colaboradores')
   const { settings } = useSystemSettings()
 
   const handleAvaliarColaborador = (colaboradorId: string) => {
     setActiveTab('avaliar')
   }
 
+  const isBPRH = user.perfil === 'bp_rh'
+  const painelTitulo = isBPRH ? 'Painel Business Partner RH' : 'Painel do Supervisor'
+  const descricaoUsuario = isBPRH ? 'Bem-vindo(a), ' + user.nome + ' • Acesso Administrativo' : 'Bem-vindo(a), ' + user.nome + ' • Gerencie seus colaboradores'
+
   return (
     <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           className="flex items-center justify-between mb-6 sm:mb-8"
           initial={{ opacity: 0, y: -20 }}
@@ -42,14 +46,14 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Painel do Gestor
+                {painelTitulo}
               </h1>
               <p className="text-sm sm:text-base text-gray-600">
-                Bem-vindo(a), {user.nome} • Gerencie seus colaboradores
+                {descricaoUsuario}
               </p>
             </div>
           </div>
-          
+
           <div className="ml-auto">
             <button
               onClick={onLogout}
@@ -61,7 +65,6 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
           </div>
         </motion.div>
 
-        {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-xl">
           <button
             onClick={() => setActiveTab('colaboradores')}
@@ -114,6 +117,16 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
             📊 Desempenho
           </button>
           <button
+            onClick={() => setActiveTab('avaliacao-desempenho-supervisor')}
+            className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
+              activeTab === 'avaliacao-desempenho-supervisor'
+                ? 'bg-white text-green-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            🎯 Aval. Promoção
+          </button>
+          <button
             onClick={() => setActiveTab('movimentacao-requisicao')}
             className={`flex-1 min-w-[140px] px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
               activeTab === 'movimentacao-requisicao'
@@ -125,7 +138,6 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
           </button>
         </div>
 
-        {/* Content based on active tab */}
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
@@ -134,22 +146,22 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
         >
           {activeTab === 'colaboradores' && (
             <ColaboradoresSection
-              isRH={false}
-              gestorId={user.id}
-              gestorName={user.nome}
+              isRH={isBPRH}
+              supervisorId={user.id}
+              supervisorName={user.nome}
               onAvaliar={handleAvaliarColaborador}
             />
           )}
           {activeTab === 'avaliar' && (
             <AvaliarSection
-              gestorId={user.id}
-              gestorNome={user.nome}
+              supervisorId={user.id}
+              supervisorNome={user.nome}
             />
           )}
           {activeTab === 'feedbacks' && (
             <FeedbacksSection
-              gestorId={user.id}
-              gestorNome={user.nome}
+              supervisorId={user.id}
+              supervisorNome={user.nome}
             />
           )}
           {activeTab === 'avaliacao-experiencia' && (
@@ -157,6 +169,13 @@ export function GestorFlow({ user, onLogout }: GestorFlowProps) {
           )}
           {activeTab === 'avaliacao-feedback' && (
             <AvaliacaoFeedbackSection />
+          )}
+          {activeTab === 'avaliacao-desempenho-supervisor' && (
+            <AvaliacaoDesempenhoSupervisorSection
+              supervisorId={user.id}
+              supervisorNome={user.nome}
+              isBPRH={isBPRH}
+            />
           )}
           {activeTab === 'movimentacao-requisicao' && (
             <MovimentacaoRequisicaoSection />

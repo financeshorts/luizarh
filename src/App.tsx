@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Login } from './components/Login'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { UnifiedHRSystem } from './components/UnifiedHRSystem'
-import { GestorFlow } from './components/GestorFlow'
+import { SupervisorFlow } from './components/SupervisorFlow'
 import { authService, User } from './lib/auth'
 import { supabaseAuditService } from './services/supabaseAuditService'
 import { logger } from './lib/logger'
@@ -88,15 +88,15 @@ function App() {
               <Login onLogin={handleLogin} />
             </motion.div>
           )}
-          {currentUser?.perfil === 'gestor' && (
+          {(currentUser?.perfil === 'supervisor' || currentUser?.perfil === 'bp_rh') && (
             <motion.div
-              key="gestor"
+              key="supervisor"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <GestorFlow user={currentUser} onLogout={handleLogout} />
+              <SupervisorFlow user={currentUser} onLogout={handleLogout} />
             </motion.div>
           )}
           {currentUser?.perfil === 'rh' && (

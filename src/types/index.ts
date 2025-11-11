@@ -2,7 +2,7 @@ export interface User {
   id: string
   nome: string
   telefone: string
-  perfil: 'rh' | 'gestor' | 'colaborador'
+  perfil: 'rh' | 'supervisor' | 'colaborador' | 'bp_rh'
 }
 
 export type Unidade = 'Cristalina' | 'Correntina' | 'Corporativo' | 'Ibicoara' | 'Papanduva' | 'São Gabriel' | 'Uberlandia'
@@ -495,3 +495,129 @@ export const COMPETENCIAS_EXPERIENCIA: CompetenciaExperiencia[] = [
     ]
   }
 ]
+
+export interface AvaliacaoDesempenhoSupervisor {
+  id: string
+  colaborador_id: string
+  supervisor_id: string
+  periodo_avaliacao: string
+  data_avaliacao: string
+  assiduidade_faltas: number
+  assiduidade_atestados: number
+  assiduidade_obs?: string
+  disciplina_advertencias: number
+  disciplina_comportamento: number
+  disciplina_obs?: string
+  produtividade_qualidade: number
+  produtividade_quantidade: number
+  produtividade_prazos: number
+  produtividade_obs?: string
+  relacionamento_equipe: number
+  relacionamento_clientes: number
+  relacionamento_obs?: string
+  postura_apresentacao: number
+  postura_comunicacao: number
+  postura_obs?: string
+  engajamento_iniciativa: number
+  engajamento_comprometimento: number
+  engajamento_obs?: string
+  total_pontos: number
+  percentual_final: number
+  classificacao: string
+  nome_supervisor?: string
+  nome_bp_rh?: string
+  nome_colaborador_avaliado?: string
+  confirmacao_supervisor: boolean
+  confirmacao_bp_rh: boolean
+  confirmacao_colaborador: boolean
+  data_confirmacao_supervisor?: string
+  data_confirmacao_bp_rh?: string
+  data_confirmacao_colaborador?: string
+  created_at: string
+  updated_at: string
+  colaborador?: Colaborador
+  supervisor?: Colaborador
+}
+
+export interface AvaliacaoDesempenhoSupervisorForm {
+  colaborador_id: string
+  periodo_avaliacao: string
+  assiduidade_faltas: number
+  assiduidade_atestados: number
+  assiduidade_obs?: string
+  disciplina_advertencias: number
+  disciplina_comportamento: number
+  disciplina_obs?: string
+  produtividade_qualidade: number
+  produtividade_quantidade: number
+  produtividade_prazos: number
+  produtividade_obs?: string
+  relacionamento_equipe: number
+  relacionamento_clientes: number
+  relacionamento_obs?: string
+  postura_apresentacao: number
+  postura_comunicacao: number
+  postura_obs?: string
+  engajamento_iniciativa: number
+  engajamento_comprometimento: number
+  engajamento_obs?: string
+}
+
+export const CRITERIOS_AVALIACAO_SUPERVISOR = [
+  {
+    categoria: 'Assiduidade',
+    pontos_max: 20,
+    itens: [
+      { campo: 'assiduidade_faltas', label: 'Faltas não justificadas', pontos_max: 10 },
+      { campo: 'assiduidade_atestados', label: 'Atestados médicos', pontos_max: 10 }
+    ]
+  },
+  {
+    categoria: 'Disciplina',
+    pontos_max: 20,
+    itens: [
+      { campo: 'disciplina_advertencias', label: 'Advertências verbais/escritas', pontos_max: 10 },
+      { campo: 'disciplina_comportamento', label: 'Comportamento adequado', pontos_max: 10 }
+    ]
+  },
+  {
+    categoria: 'Produtividade',
+    pontos_max: 45,
+    itens: [
+      { campo: 'produtividade_qualidade', label: 'Qualidade do trabalho', pontos_max: 20 },
+      { campo: 'produtividade_quantidade', label: 'Volume de trabalho', pontos_max: 15 },
+      { campo: 'produtividade_prazos', label: 'Cumprimento de prazos', pontos_max: 10 }
+    ]
+  },
+  {
+    categoria: 'Relacionamento Interpessoal',
+    pontos_max: 20,
+    itens: [
+      { campo: 'relacionamento_equipe', label: 'Relacionamento com equipe', pontos_max: 10 },
+      { campo: 'relacionamento_clientes', label: 'Relacionamento com clientes', pontos_max: 10 }
+    ]
+  },
+  {
+    categoria: 'Postura Profissional',
+    pontos_max: 20,
+    itens: [
+      { campo: 'postura_apresentacao', label: 'Apresentação pessoal', pontos_max: 10 },
+      { campo: 'postura_comunicacao', label: 'Comunicação profissional', pontos_max: 10 }
+    ]
+  },
+  {
+    categoria: 'Engajamento',
+    pontos_max: 20,
+    itens: [
+      { campo: 'engajamento_iniciativa', label: 'Iniciativa e proatividade', pontos_max: 10 },
+      { campo: 'engajamento_comprometimento', label: 'Comprometimento', pontos_max: 10 }
+    ]
+  }
+]
+
+export function calcularClassificacaoSupervisor(percentual: number): string {
+  if (percentual >= 90) return 'Excelente'
+  if (percentual >= 70) return 'Satisfatório'
+  if (percentual >= 50) return 'Regular'
+  return 'Insatisfatório'
+}

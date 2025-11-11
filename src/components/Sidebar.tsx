@@ -93,7 +93,7 @@ export function Sidebar({ user, activeSection, onSectionChange, onLogout }: Side
     }
   ]
 
-  const gestorMenuGroups: MenuGroup[] = [
+  const supervisorMenuGroups: MenuGroup[] = [
     {
       title: 'Minha Equipe',
       icon: Users,
@@ -105,7 +105,7 @@ export function Sidebar({ user, activeSection, onSectionChange, onLogout }: Side
     }
   ]
 
-  const menuGroups = user.perfil === 'rh' ? rhMenuGroups : gestorMenuGroups
+  const menuGroups = user.perfil === 'rh' ? rhMenuGroups : supervisorMenuGroups
 
   const toggleGroup = (groupTitle: string) => {
     setExpandedGroups(prev =>
@@ -149,7 +149,7 @@ export function Sidebar({ user, activeSection, onSectionChange, onLogout }: Side
             <p className="text-xs text-gray-500 font-medium">Bem-vindo(a)</p>
             <p className="font-bold text-gray-900 text-sm">{user.nome}</p>
             <span className="inline-block px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-100 rounded-full mt-1">
-              {user.perfil === 'rh' ? 'RH' : 'Gestor'}
+              {user.perfil === 'rh' ? 'RH' : user.perfil === 'bp_rh' ? 'BP RH' : 'Supervisor'}
             </span>
           </div>
         </div>

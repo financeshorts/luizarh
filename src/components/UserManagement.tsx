@@ -19,7 +19,7 @@ export function UserManagement() {
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
-    perfil: 'gestor' as 'rh' | 'gestor' | 'colaborador',
+    perfil: 'supervisor' as 'rh' | 'supervisor' | 'colaborador' | 'bp_rh',
     ativo: true
   })
 
@@ -50,7 +50,7 @@ export function UserManagement() {
     setFormData({
       nome: '',
       telefone: '',
-      perfil: 'gestor',
+      perfil: 'supervisor',
       ativo: true
     })
     setEditingUser(null)
@@ -153,10 +153,11 @@ export function UserManagement() {
                 </label>
                 <select
                   value={formData.perfil}
-                  onChange={(e) => setFormData({ ...formData, perfil: e.target.value as 'rh' | 'gestor' | 'colaborador' })}
+                  onChange={(e) => setFormData({ ...formData, perfil: e.target.value as 'rh' | 'supervisor' | 'colaborador' | 'bp_rh' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="gestor">Gestor</option>
+                  <option value="supervisor">Supervisor</option>
+                  <option value="bp_rh">Business Partner RH</option>
                   <option value="rh">RH</option>
                   <option value="colaborador">Colaborador</option>
                 </select>

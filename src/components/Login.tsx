@@ -8,7 +8,7 @@ import { useSystemSettings } from '../hooks/useSystemSettings'
 import toast from 'react-hot-toast'
 
 interface LoginProps {
-  onLogin: (user: { id: string; nome: string; telefone: string; perfil: 'rh' | 'gestor' | 'colaborador' }) => void
+  onLogin: (user: { id: string; nome: string; telefone: string; perfil: 'rh' | 'supervisor' | 'colaborador' | 'bp_rh' }) => void
 }
 
 export function Login({ onLogin }: LoginProps) {

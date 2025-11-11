@@ -10,12 +10,12 @@ import toast from 'react-hot-toast'
 
 interface ColaboradoresProps {
   isRH: boolean
-  gestorId?: string
-  gestorName?: string
+  supervisorId?: string
+  supervisorName?: string
   onAvaliar?: (colaboradorId: string) => void
 }
 
-export function ColaboradoresSection({ isRH, gestorId, gestorName, onAvaliar }: ColaboradoresProps) {
+export function ColaboradoresSection({ isRH, supervisorId, supervisorName, onAvaliar }: ColaboradoresProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingColaborador, setEditingColaborador] = useState<Colaborador | null>(null)
   const [formData, setFormData] = useState<ColaboradorForm>({
@@ -26,7 +26,7 @@ export function ColaboradoresSection({ isRH, gestorId, gestorName, onAvaliar }: 
     status: 'ativo'
   })
 
-  const { data: colaboradores = [], isLoading } = useColaboradores(isRH ? undefined : gestorId)
+  const { data: colaboradores = [], isLoading } = useColaboradores(isRH ? undefined : supervisorId)
   const { data: unidades = [] } = useUnidades()
   const { data: setores = [] } = useSetores()
   const createColaborador = useCreateColaborador()
@@ -56,7 +56,7 @@ export function ColaboradoresSection({ isRH, gestorId, gestorName, onAvaliar }: 
         }
         await createColaborador.mutateAsync({
           colaboradorData: formData,
-          gestorId: gestorId || null
+          gestorId: supervisorId || null
         })
       }
       resetForm()
