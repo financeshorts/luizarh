@@ -5,6 +5,7 @@ import { useDashboardMetrics } from '../hooks/useSupabaseQuery'
 import { LoadingSpinner } from './LoadingSpinner'
 import { AnimatedCard } from './AnimatedCard'
 import { MetricCard } from './MetricCard'
+import { AvaliacoesCard } from './AvaliacoesCard'
 import { User } from '../types'
 
 interface RHDashboardProps {
@@ -249,6 +250,9 @@ Alta retenção indica satisfação e engajamento da equipe.`}
           </div>
         </AnimatedCard>
       </div>
+
+      {/* Card de Avaliações Completo */}
+      <AvaliacoesCard />
     </div>
   )
 })
