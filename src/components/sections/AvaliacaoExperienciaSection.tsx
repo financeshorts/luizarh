@@ -57,7 +57,7 @@ export function AvaliacaoExperienciaSection({ userId, isRH = false }: AvaliacaoE
         .from('avaliacoes_experiencia')
         .select(`
           *,
-          colaborador:colaboradores(*)
+          colaborador:colaboradores!avaliacoes_experiencia_colaborador_id_fkey(*)
         `)
         .order('created_at', { ascending: false })
 
