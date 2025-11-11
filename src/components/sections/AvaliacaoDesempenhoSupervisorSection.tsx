@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, FileText, Check, X, Calendar } from 'lucide-react'
+import { Plus, FileText, Calendar, Building2 } from 'lucide-react'
 import { AnimatedCard } from '../AnimatedCard'
 import { LoadingSpinner } from '../LoadingSpinner'
 import { useColaboradores } from '../../hooks/useSupabaseQuery'
-import { CRITERIOS_AVALIACAO_SUPERVISOR, calcularClassificacaoSupervisor, AvaliacaoDesempenhoSupervisorForm } from '../../types'
+import { useUnidades } from '../../hooks/useOrganizationalData'
+import { CRITERIOS_AVALIACAO_SUPERVISOR, calcularClassificacaoSupervisor, AvaliacaoDesempenhoSupervisorForm, UNIDADES } from '../../types'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
@@ -21,29 +22,24 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
   const [formData, setFormData] = useState<AvaliacaoDesempenhoSupervisorForm>({
     colaborador_id: '',
+    unidade: '',
     periodo_avaliacao: `${new Date().getMonth() + 1}º Trimestre ${new Date().getFullYear()}`,
-    assiduidade_faltas: 0,
-    assiduidade_atestados: 0,
+    assiduidade_faltas_injustificadas: 20,
+    assiduidade_atestados_medicos: 5,
     assiduidade_obs: '',
-    disciplina_advertencias: 0,
-    disciplina_comportamento: 0,
+    disciplina_advertencias_pontos: 15,
+    disciplina_suspensoes: 10,
     disciplina_obs: '',
-    produtividade_qualidade: 0,
-    produtividade_quantidade: 0,
-    produtividade_prazos: 0,
-    produtividade_obs: '',
-    relacionamento_equipe: 0,
-    relacionamento_clientes: 0,
-    relacionamento_obs: '',
-    postura_apresentacao: 0,
-    postura_comunicacao: 0,
-    postura_obs: '',
-    engajamento_iniciativa: 0,
-    engajamento_comprometimento: 0,
-    engajamento_obs: ''
+    saude_restricoes_sesmt: 10,
+    saude_obs: '',
+    resultados_desempenho_tecnico: 25,
+    resultados_obs: '',
+    desenvolvimento_treinamentos: 15,
+    desenvolvimento_obs: ''
   })
 
   const { data: colaboradores = [], isLoading: loadingColaboradores } = useColaboradores(isBPRH ? undefined : supervisorId)
+  const { data: unidades = [] } = useUnidades()
 
   useEffect(() => {
     carregarAvaliacoes()
@@ -78,33 +74,27 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
   const calcularTotalPontos = (form: AvaliacaoDesempenhoSupervisorForm): number => {
     return (
-      form.assiduidade_faltas +
-      form.assiduidade_atestados +
-      form.disciplina_advertencias +
-      form.disciplina_comportamento +
-      form.produtividade_qualidade +
-      form.produtividade_quantidade +
-      form.produtividade_prazos +
-      form.relacionamento_equipe +
-      form.relacionamento_clientes +
-      form.postura_apresentacao +
-      form.postura_comunicacao +
-      form.engajamento_iniciativa +
-      form.engajamento_comprometimento
+      form.assiduidade_faltas_injustificadas +
+      form.assiduidade_atestados_medicos +
+      form.disciplina_advertencias_pontos +
+      form.disciplina_suspensoes +
+      form.saude_restricoes_sesmt +
+      form.resultados_desempenho_tecnico +
+      form.desenvolvimento_treinamentos
     )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.colaborador_id) {
-      toast.error('Selecione um colaborador')
+    if (!formData.colaborador_id || !formData.unidade) {
+      toast.error('Selecione um colaborador e uma unidade')
       return
     }
 
     try {
       const totalPontos = calcularTotalPontos(formData)
-      const percentualFinal = (totalPontos / 145) * 100
+      const percentualFinal = (totalPontos / 100) * 100
       const classificacao = calcularClassificacaoSupervisor(percentualFinal)
 
       const colaborador = colaboradores.find(c => c.id === formData.colaborador_id)
@@ -112,8 +102,22 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
       const { error } = await supabase
         .from('avaliacao_desempenho_supervisor')
         .insert({
-          ...formData,
+          colaborador_id: formData.colaborador_id,
           supervisor_id: supervisorId,
+          unidade: formData.unidade,
+          periodo_avaliacao: formData.periodo_avaliacao,
+          assiduidade_faltas_injustificadas: formData.assiduidade_faltas_injustificadas,
+          assiduidade_atestados_medicos: formData.assiduidade_atestados_medicos,
+          assiduidade_obs: formData.assiduidade_obs,
+          disciplina_advertencias_pontos: formData.disciplina_advertencias_pontos,
+          disciplina_suspensoes: formData.disciplina_suspensoes,
+          disciplina_obs: formData.disciplina_obs,
+          saude_restricoes_sesmt: formData.saude_restricoes_sesmt,
+          saude_obs: formData.saude_obs,
+          resultados_desempenho_tecnico: formData.resultados_desempenho_tecnico,
+          resultados_obs: formData.resultados_obs,
+          desenvolvimento_treinamentos: formData.desenvolvimento_treinamentos,
+          desenvolvimento_obs: formData.desenvolvimento_obs,
           total_pontos: totalPontos,
           percentual_final: percentualFinal,
           classificacao: classificacao,
@@ -125,7 +129,7 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
       if (error) throw error
 
-      toast.success('✅ Avaliação de desempenho criada com sucesso!')
+      toast.success('✅ Avaliação criada com sucesso!')
       resetForm()
       carregarAvaliacoes()
     } catch (error: any) {
@@ -137,26 +141,20 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
   const resetForm = () => {
     setFormData({
       colaborador_id: '',
+      unidade: '',
       periodo_avaliacao: `${new Date().getMonth() + 1}º Trimestre ${new Date().getFullYear()}`,
-      assiduidade_faltas: 0,
-      assiduidade_atestados: 0,
+      assiduidade_faltas_injustificadas: 20,
+      assiduidade_atestados_medicos: 5,
       assiduidade_obs: '',
-      disciplina_advertencias: 0,
-      disciplina_comportamento: 0,
+      disciplina_advertencias_pontos: 15,
+      disciplina_suspensoes: 10,
       disciplina_obs: '',
-      produtividade_qualidade: 0,
-      produtividade_quantidade: 0,
-      produtividade_prazos: 0,
-      produtividade_obs: '',
-      relacionamento_equipe: 0,
-      relacionamento_clientes: 0,
-      relacionamento_obs: '',
-      postura_apresentacao: 0,
-      postura_comunicacao: 0,
-      postura_obs: '',
-      engajamento_iniciativa: 0,
-      engajamento_comprometimento: 0,
-      engajamento_obs: ''
+      saude_restricoes_sesmt: 10,
+      saude_obs: '',
+      resultados_desempenho_tecnico: 25,
+      resultados_obs: '',
+      desenvolvimento_treinamentos: 15,
+      desenvolvimento_obs: ''
     })
     setShowForm(false)
   }
@@ -165,17 +163,16 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
     return <LoadingSpinner size="lg" text="Carregando..." />
   }
 
-  const colaboradorSelecionado = colaboradores.find(c => c.id === formData.colaborador_id)
   const totalAtual = calcularTotalPontos(formData)
-  const percentualAtual = (totalAtual / 145) * 100
+  const percentualAtual = (totalAtual / 100) * 100
   const classificacaoAtual = calcularClassificacaoSupervisor(percentualAtual)
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Avaliação de Desempenho</h2>
-          <p className="text-gray-600">Programa de Avaliação RH - Promoções Internas</p>
+          <h2 className="text-2xl font-bold text-gray-900">Programa de Avaliação RH Unidade</h2>
+          <p className="text-gray-600">Promoções Internas - Tabela de Avaliação</p>
         </div>
         <motion.button
           onClick={() => setShowForm(!showForm)}
@@ -190,10 +187,10 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
       {showForm && (
         <AnimatedCard className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Nova Avaliação de Desempenho</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Nova Avaliação de Promoção</h3>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Colaborador *
@@ -204,10 +201,10 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 >
-                  <option value="">Selecione um colaborador</option>
+                  <option value="">Selecione</option>
                   {colaboradores.map((colaborador) => (
                     <option key={colaborador.id} value={colaborador.id}>
-                      {colaborador.nome} - {colaborador.cargo || colaborador.setor}
+                      {colaborador.nome}
                     </option>
                   ))}
                 </select>
@@ -215,7 +212,26 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Período da Avaliação *
+                  Unidade *
+                </label>
+                <select
+                  value={formData.unidade}
+                  onChange={(e) => setFormData({ ...formData, unidade: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Selecione</option>
+                  {UNIDADES.map((unidade) => (
+                    <option key={unidade} value={unidade}>
+                      {unidade}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Período *
                 </label>
                 <input
                   type="text"
@@ -231,18 +247,19 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
             {CRITERIOS_AVALIACAO_SUPERVISOR.map((criterio, idx) => (
               <div key={idx} className="border-t pt-4">
                 <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                  <span className="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">
+                  <span className="bg-green-100 text-green-700 rounded-full w-10 h-10 flex items-center justify-center mr-2 text-sm font-bold">
                     {criterio.pontos_max}
                   </span>
                   {criterio.categoria}
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                  {criterio.itens.map((item) => (
+                <div className="space-y-3">
+                  {criterio.itens.map((item: any) => (
                     <div key={item.campo}>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {item.label} (máx: {item.pontos_max})
+                        {item.label} <span className="text-xs text-gray-500">(máx: {item.pontos_max} pts)</span>
                       </label>
+                      <p className="text-xs text-gray-500 mb-2">{item.descricao}</p>
                       <input
                         type="number"
                         min="0"
@@ -255,13 +272,13 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
                   ))}
                 </div>
 
-                <div>
+                <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Observações
                   </label>
                   <textarea
-                    value={(formData as any)[`${criterio.categoria.toLowerCase().split(' ')[0]}_obs`] || ''}
-                    onChange={(e) => setFormData({ ...formData, [`${criterio.categoria.toLowerCase().split(' ')[0]}_obs`]: e.target.value })}
+                    value={(formData as any)[`${criterio.categoria.toLowerCase().split(' ')[1]}_obs`] || ''}
+                    onChange={(e) => setFormData({ ...formData, [`${criterio.categoria.toLowerCase().split(' ')[1]}_obs`]: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     rows={2}
                     placeholder="Observações opcionais sobre este critério..."
@@ -274,7 +291,7 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-gray-600">Total de Pontos</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalAtual}/145</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalAtual}/100</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Percentual Final</p>
@@ -319,23 +336,28 @@ export function AvaliacaoDesempenhoSupervisorSection({ supervisorId, supervisorN
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-900">{avaliacao.colaborador?.nome}</h4>
+                  <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 inline" />
+                    {avaliacao.unidade || 'Não informado'}
+                  </p>
                   <p className="text-sm text-gray-600 mt-1">
                     <Calendar className="w-4 h-4 inline mr-1" />
                     {avaliacao.periodo_avaliacao} • {new Date(avaliacao.data_avaliacao).toLocaleDateString('pt-BR')}
                   </p>
-                  <p className="text-sm text-gray-600">Avaliado por: {avaliacao.supervisor?.nome || avaliacao.nome_supervisor}</p>
+                  <p className="text-sm text-gray-600">Supervisor: {avaliacao.supervisor?.nome || avaliacao.nome_supervisor}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-900">{avaliacao.percentual_final.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold text-gray-900">{avaliacao.percentual_final?.toFixed(1) || '0.0'}%</div>
                   <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                     avaliacao.classificacao === 'Excelente' ? 'bg-green-100 text-green-700' :
-                    avaliacao.classificacao === 'Satisfatório' ? 'bg-blue-100 text-blue-700' :
+                    avaliacao.classificacao === 'Muito Bom' ? 'bg-blue-100 text-blue-700' :
+                    avaliacao.classificacao === 'Satisfatório' ? 'bg-teal-100 text-teal-700' :
                     avaliacao.classificacao === 'Regular' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-red-100 text-red-700'
                   }`}>
-                    {avaliacao.classificacao}
+                    {avaliacao.classificacao || 'Não classificado'}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{avaliacao.total_pontos}/145 pontos</p>
+                  <p className="text-xs text-gray-500 mt-1">{avaliacao.total_pontos || 0}/100 pontos</p>
                 </div>
               </div>
             </AnimatedCard>

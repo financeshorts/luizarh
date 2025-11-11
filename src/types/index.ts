@@ -541,83 +541,101 @@ export interface AvaliacaoDesempenhoSupervisor {
 
 export interface AvaliacaoDesempenhoSupervisorForm {
   colaborador_id: string
+  unidade: string
   periodo_avaliacao: string
-  assiduidade_faltas: number
-  assiduidade_atestados: number
+  assiduidade_faltas_injustificadas: number
+  assiduidade_atestados_medicos: number
   assiduidade_obs?: string
-  disciplina_advertencias: number
-  disciplina_comportamento: number
+  disciplina_advertencias_pontos: number
+  disciplina_suspensoes: number
   disciplina_obs?: string
-  produtividade_qualidade: number
-  produtividade_quantidade: number
-  produtividade_prazos: number
-  produtividade_obs?: string
-  relacionamento_equipe: number
-  relacionamento_clientes: number
-  relacionamento_obs?: string
-  postura_apresentacao: number
-  postura_comunicacao: number
-  postura_obs?: string
-  engajamento_iniciativa: number
-  engajamento_comprometimento: number
-  engajamento_obs?: string
+  saude_restricoes_sesmt: number
+  saude_obs?: string
+  resultados_desempenho_tecnico: number
+  resultados_obs?: string
+  desenvolvimento_treinamentos: number
+  desenvolvimento_obs?: string
 }
 
 export const CRITERIOS_AVALIACAO_SUPERVISOR = [
   {
-    categoria: 'Assiduidade',
-    pontos_max: 20,
+    categoria: '1. Assiduidade',
+    pontos_max: 25,
     itens: [
-      { campo: 'assiduidade_faltas', label: 'Faltas não justificadas', pontos_max: 10 },
-      { campo: 'assiduidade_atestados', label: 'Atestados médicos', pontos_max: 10 }
+      {
+        campo: 'assiduidade_faltas_injustificadas',
+        label: 'Faltas injustificadas',
+        pontos_max: 20,
+        descricao: '0 faltas = 20 pts | Cada falta injustificada reduz 3 pts'
+      },
+      {
+        campo: 'assiduidade_atestados_medicos',
+        label: 'Atestados médicos',
+        pontos_max: 5,
+        descricao: 'Até 1 atestado = 5 pts | Acima disso reduz 2 pts por atestado adicional'
+      }
     ]
   },
   {
-    categoria: 'Disciplina',
-    pontos_max: 20,
+    categoria: '2. Disciplina',
+    pontos_max: 25,
     itens: [
-      { campo: 'disciplina_advertencias', label: 'Advertências verbais/escritas', pontos_max: 10 },
-      { campo: 'disciplina_comportamento', label: 'Comportamento adequado', pontos_max: 10 }
+      {
+        campo: 'disciplina_advertencias_pontos',
+        label: 'Advertências',
+        pontos_max: 15,
+        descricao: 'Sem advertência = 15 pts | Cada advertência reduz 5 pts'
+      },
+      {
+        campo: 'disciplina_suspensoes',
+        label: 'Suspensões',
+        pontos_max: 10,
+        descricao: 'Sem suspensão = 10 pts | Cada suspensão reduz 10 pts'
+      }
     ]
   },
   {
-    categoria: 'Produtividade',
-    pontos_max: 45,
+    categoria: '3. Saúde e Segurança',
+    pontos_max: 10,
     itens: [
-      { campo: 'produtividade_qualidade', label: 'Qualidade do trabalho', pontos_max: 20 },
-      { campo: 'produtividade_quantidade', label: 'Volume de trabalho', pontos_max: 15 },
-      { campo: 'produtividade_prazos', label: 'Cumprimento de prazos', pontos_max: 10 }
+      {
+        campo: 'saude_restricoes_sesmt',
+        label: 'Restrições SESMT',
+        pontos_max: 10,
+        descricao: 'Sem restrição = 10 pts | Com restrição = 5 pts (se não comprometer função)'
+      }
     ]
   },
   {
-    categoria: 'Relacionamento Interpessoal',
-    pontos_max: 20,
+    categoria: '4. Resultados na Área',
+    pontos_max: 25,
     itens: [
-      { campo: 'relacionamento_equipe', label: 'Relacionamento com equipe', pontos_max: 10 },
-      { campo: 'relacionamento_clientes', label: 'Relacionamento com clientes', pontos_max: 10 }
+      {
+        campo: 'resultados_desempenho_tecnico',
+        label: 'Desempenho técnico',
+        pontos_max: 25,
+        descricao: 'Avaliação do RH com base em metas, produtividade e relatórios'
+      }
     ]
   },
   {
-    categoria: 'Postura Profissional',
-    pontos_max: 20,
+    categoria: '5. Desenvolvimento',
+    pontos_max: 15,
     itens: [
-      { campo: 'postura_apresentacao', label: 'Apresentação pessoal', pontos_max: 10 },
-      { campo: 'postura_comunicacao', label: 'Comunicação profissional', pontos_max: 10 }
-    ]
-  },
-  {
-    categoria: 'Engajamento',
-    pontos_max: 20,
-    itens: [
-      { campo: 'engajamento_iniciativa', label: 'Iniciativa e proatividade', pontos_max: 10 },
-      { campo: 'engajamento_comprometimento', label: 'Comprometimento', pontos_max: 10 }
+      {
+        campo: 'desenvolvimento_treinamentos',
+        label: 'Participação em treinamentos',
+        pontos_max: 15,
+        descricao: 'Participou de todos = 15 pts | Cada ausência sem justificativa reduz 5 pts'
+      }
     ]
   }
 ]
 
 export function calcularClassificacaoSupervisor(percentual: number): string {
   if (percentual >= 90) return 'Excelente'
+  if (percentual >= 80) return 'Muito Bom'
   if (percentual >= 70) return 'Satisfatório'
-  if (percentual >= 50) return 'Regular'
+  if (percentual >= 60) return 'Regular'
   return 'Insatisfatório'
 }
